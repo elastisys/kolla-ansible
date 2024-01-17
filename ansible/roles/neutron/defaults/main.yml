@@ -956,3 +956,4 @@ neutron_tls_proxy_defaults_balance: "roundrobin"
 neutron_dns_integration: "{{ enable_designate | bool }}"
 # When overridden by the user, this value must end with a dot.
 neutron_dns_domain: "openstacklocal"
+neutron_vlan_network_ranges: ""

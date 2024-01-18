@@ -1,2 +1,17 @@
 ---
+- name: Stop and remove containers for haproxy exporter containers
+  become: true
+  kolla_container:
+    action: "stop_and_remove_container"
+    name: "prometheus_haproxy_exporter"
+  when:
+    - inventory_hostname in groups['loadbalancer']
+- name: Removing config for haproxy exporter
+  file:
+    path: "{{ node_config_directory }}/prometheus-haproxy-exporter"
+    state: "absent"
+  become: true
+  when:
+    - inventory_hostname in groups['loadbalancer']
+
 - import_tasks: deploy.yml

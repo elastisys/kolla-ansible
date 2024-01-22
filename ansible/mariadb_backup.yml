@@ -1,4 +1,6 @@
 ---
+- import_playbook: decrypt-sops.yaml
+
 - name: Backup MariaDB
   hosts: mariadb
   roles:

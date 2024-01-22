@@ -1,0 +1,21 @@
+- name: Decrypt passwords
+  hosts: localhost
+  gather_facts: false
+  vars:
+    CONFIG_DIR: ""
+    list_sops_files: []
+  tasks:    
+    - debug:
+        msg: "{{ item }}"
+      loop: "{{ list_sops_files }}"
+
+    - name: Check that files are still not encrypted
+      command: grep -qs 'sops:\|"sops":\|\[sops\]\|sops_version=' "{{ CONFIG_DIR }}/{{ item }}"
+      register: encrypted_files_result
+      loop: "{{ list_sops_files }}"
+    
+    - name: Fail if file is still encrypted
+      fail:
+        msg: "The file ({{ item.item }}) is still encrypted."
+      when: item.rc == 0
+      loop: "{{ encrypted_files_result.results }}"

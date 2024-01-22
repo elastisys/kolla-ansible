@@ -1,4 +1,6 @@
 ---
+- import_playbook: decrypt-sops.yaml
+
 - name: Recover mariadb
   hosts: mariadb
   max_fail_percentage: >-

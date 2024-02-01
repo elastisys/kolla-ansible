@@ -29,6 +29,21 @@
     - cinder_backend_ceph | bool
     - external_ceph_cephx_enabled | bool
 
+- name: Check fast keyring file
+  vars:
+    keyring: "fast.{{ ceph_cinder_keyring }}"
+    paths:
+      - "{{ node_custom_config }}/nova/{{ inventory_hostname }}/{{ keyring }}"
+      - "{{ node_custom_config }}/nova/{{ keyring }}"
+  stat:
+    path: "{{ lookup('first_found', paths) }}"
+  delegate_to: localhost
+  register: fast_cephx_keyring_file
+  failed_when: not cinder_cephx_keyring_file.stat.exists
+  when:
+    - nova_backend == "rbd"
+    - external_ceph_cephx_enabled | bool
+
 - name: Extract nova key from file
   set_fact:
     nova_cephx_raw_key:
@@ -45,6 +60,15 @@
   changed_when: false
   when:
     - cinder_backend_ceph | bool
+    - external_ceph_cephx_enabled | bool
+
+- name: Extract fast key from file
+  set_fact:
+    fast_cephx_raw_key:
+      "{{ lookup('template', fast_cephx_keyring_file.stat.path) | regex_search('key\\s*=.*$', multiline=True) | regex_replace('key\\s*=\\s*(.*)\\s*', '\\1') }}"
+  changed_when: false
+  when:
+    - nova_backend == "rbd"
     - external_ceph_cephx_enabled | bool
 
 - name: Copy over ceph nova keyring file
@@ -81,12 +105,52 @@
   notify:
     - Restart {{ item }} container
 
+- name: Copy over ceph fast keyring file
+  template:
+    src: "{{ fast_cephx_keyring_file.stat.path }}"
+    dest: "{{ node_config_directory }}/{{ item }}/"
+    owner: "{{ config_owner_user }}"
+    group: "{{ config_owner_group }}"
+    mode: "0660"
+  become: true
+  with_items:  # NOTE: nova-libvirt does not need it
+    - nova-compute
+  when:
+    - inventory_hostname in groups[nova_cell_compute_group]
+    - nova_backend == "rbd"
+    - external_ceph_cephx_enabled | bool
+  notify:
+    - Restart {{ item }} container
+
 - name: Copy over ceph.conf
   vars:
     service: "{{ nova_cell_services[item] }}"
     paths:
       - "{{ node_custom_config }}/nova/{{ inventory_hostname }}/{{ nova_ceph_cluster }}.conf"
       - "{{ node_custom_config }}/nova/{{ nova_ceph_cluster }}.conf"
+  template:
+    src: "{{ lookup('first_found', paths) }}"
+    dest: "{{ node_config_directory }}/{{ item }}/"
+    owner: "{{ config_owner_user }}"
+    group: "{{ config_owner_group }}"
+    mode: "0660"
+  become: true
+  with_items:
+    - nova-compute
+    - nova-libvirt
+  when:
+    - inventory_hostname in groups[service.group]
+    - service.enabled | bool
+    - nova_backend == "rbd"
+  notify:
+    - Restart {{ item }} container
+
+- name: Copy over fast.conf
+  vars:
+    service: "{{ nova_cell_services[item] }}"
+    paths:
+      - "{{ node_custom_config }}/nova/{{ inventory_hostname }}/fast.conf"
+      - "{{ node_custom_config }}/nova/fast.conf"
   template:
     src: "{{ lookup('first_found', paths) }}"
     dest: "{{ node_config_directory }}/{{ item }}/"
@@ -130,6 +194,19 @@
         group: "root"
         mode: "0644"
       become: true
+
+    - name: Copy over fast.conf (host libvirt)
+      vars:
+        paths:
+          - "{{ node_custom_config }}/nova/{{ inventory_hostname }}/fast.conf"
+          - "{{ node_custom_config }}/nova/fast.conf"
+      template:
+        src: "{{ lookup('first_found', paths) }}"
+        dest: "/etc/ceph/fast.conf"
+        owner: "root"
+        group: "root"
+        mode: "0644"
+      become: true
   when:
     - not enable_nova_libvirt_container | bool
     - inventory_hostname in groups[nova_cell_compute_group]
@@ -169,6 +246,9 @@
         - uuid: "{{ cinder_rbd_secret_uuid }}"
           name: "client.cinder secret"
           enabled: "{{ cinder_backend_ceph }}"
+        - uuid: "{{ fast_rbd_secret_uuid }}"
+          name: "client.fast secret"
+          enabled: "{{ cinder_backend_ceph }}"
       notify: "{{ libvirt_restart_handlers }}"
 
     - name: Pushing secrets key for libvirt
@@ -193,6 +273,9 @@
           enabled: "{{ nova_backend == 'rbd' }}"
         - uuid: "{{ cinder_rbd_secret_uuid }}"
           result: "{{ cinder_cephx_raw_key | default }}"
+          enabled: "{{ cinder_backend_ceph }}"
+        - uuid: "{{ fast_rbd_secret_uuid }}"
+          result: "{{ fast_cephx_raw_key | default }}"
           enabled: "{{ cinder_backend_ceph }}"
       notify: "{{ libvirt_restart_handlers }}"
       no_log: True

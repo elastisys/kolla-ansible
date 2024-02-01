@@ -89,7 +89,7 @@ allowed_origin = {{ grafana_public_endpoint }}
 [federation]
 {% for dashboard in keystone_trusted_dashboards %}
 trusted_dashboard = {{ dashboard }}
-default_authorization_ttl = 10
+default_authorization_ttl = 1000
 {% endfor %}
 
 sso_callback_template = /etc/keystone/sso_callback_template.html

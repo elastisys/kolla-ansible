@@ -130,6 +130,13 @@ prometheus_services:
     image: "{{ prometheus_msteams_image_full }}"
     volumes: "{{ prometheus_msteams_default_volumes + prometheus_msteams_extra_volumes }}"
     dimensions: "{{ prometheus_msteams_dimensions }}"
+  prometheus-idrac-exporter:
+    container_name: prometheus_idrac_exporter
+    group: prometheus-idrac-exporter
+    enabled: "{{ enable_prometheus_idrac_exporter | bool }}"
+    image: "{{ prometheus_idrac_exporter_image_full }}"
+    volumes: "{{ prometheus_idrac_exporter_default_volumes + prometheus_idrac_exporter_extra_volumes }}"
+    dimensions: "{{ prometheus_idrac_exporter_dimensions }}"
 
 ####################
 # Prometheus Server
@@ -198,6 +205,10 @@ prometheus_node_exporter_image: "{{ docker_registry ~ '/' if docker_registry els
 prometheus_node_exporter_tag: "{{ prometheus_tag }}"
 prometheus_node_exporter_image_full: "{{ prometheus_node_exporter_image }}:{{ prometheus_node_exporter_tag }}"
 
+prometheus_idrac_exporter_image: "docker.io/freddeliv/idrac_exporter"
+prometheus_idrac_exporter_tag: "1.1.0"
+prometheus_idrac_exporter_image_full: "{{ prometheus_idrac_exporter_image }}:{{ prometheus_idrac_exporter_tag }}"
+
 prometheus_memcached_exporter_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/prometheus-memcached-exporter"
 prometheus_memcached_exporter_tag: "{{ prometheus_tag }}"
 prometheus_memcached_exporter_image_full: "{{ prometheus_memcached_exporter_image }}:{{ prometheus_memcached_exporter_tag }}"
@@ -235,6 +246,7 @@ prometheus_server_dimensions: "{{ default_container_dimensions }}"
 prometheus_haproxy_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_mysqld_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_node_exporter_dimensions: "{{ default_container_dimensions }}"
+prometheus_idrac_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_memcached_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_cadvisor_dimensions: "{{ default_container_dimensions }}"
 prometheus_alertmanager_dimensions: "{{ default_container_dimensions }}"
@@ -261,6 +273,11 @@ prometheus_node_exporter_default_volumes:
   - "{{ '/etc/timezone:/etc/timezone:ro' if ansible_facts.os_family == 'Debian' else '' }}"
   - "kolla_logs:/var/log/kolla/"
   - "/:/host:ro,rslave"
+prometheus_idrac_exporter_default_volumes:
+  - "{{ node_config_directory }}/prometheus-idrac-exporter/idrac.yml:/etc/prometheus/idrac.yml:ro"
+  - "/etc/localtime:/etc/localtime:ro"
+  - "{{ '/etc/timezone:/etc/timezone:ro' if ansible_facts.os_family == 'Debian' else '' }}"
+  - "kolla_logs:/var/log/kolla/"
 prometheus_memcached_exporter_default_volumes:
   - "{{ node_config_directory }}/prometheus-memcached-exporter/:{{ container_config_directory }}/:ro"
   - "/etc/localtime:/etc/localtime:ro"
@@ -312,6 +329,7 @@ prometheus_extra_volumes: "{{ default_extra_volumes }}"
 prometheus_server_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_mysqld_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_node_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
+prometheus_idrac_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_memcached_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_cadvisor_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_alertmanager_extra_volumes: "{{ prometheus_extra_volumes }}"
@@ -341,6 +359,7 @@ prometheus_elasticsearch_exporter_cmdline_extras: ""
 prometheus_memcached_exporter_cmdline_extras: ""
 prometheus_mysqld_exporter_cmdline_extras: ""
 prometheus_node_exporter_cmdline_extras: ""
+prometheus_idrac_exporter_cmdline_extras: ""
 prometheus_openstack_exporter_cmdline_extras: ""
 
 prometheus_alertmanager_external_url: "{{ internal_protocol }}://{{ kolla_internal_fqdn | put_address_in_context('url') }}:{{ prometheus_alertmanager_port }}"

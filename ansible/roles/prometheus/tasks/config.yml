@@ -289,3 +289,17 @@
     - "{{ role_path }}/templates/prometheus-msteams.tmpl"
   notify:
     - Restart prometheus-msteams container
+
+- name: Copying over idrac exporter config file
+  become: true
+  vars:
+    service: "{{ prometheus_services['prometheus-idrac-exporter'] }}"
+  template:
+    src: "{{ role_path }}/templates/idrac.yml.j2"
+    dest: "{{ node_config_directory }}/prometheus-idrac-exporter/idrac.yml"
+    mode: "0660"
+  when:
+    - inventory_hostname in groups[service.group]
+    - service.enabled | bool
+  notify:
+    - Restart prometheus-idrac-exporter container

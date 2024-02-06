@@ -1,0 +1,16 @@
+address: 127.0.0.1 # Listen address
+port: {{ prometheus_idrac_exporter_port }} # Listen port
+timeout: 10        # HTTP timeout (in seconds) for Redfish API calls
+retries: 1         # Number of retries before a target is marked as unreachable
+hosts:
+  default:
+    username: {{ prometheus_idrac_exporter_default_username }}
+    password: {{ prometheus_idrac_exporter_default_password }}
+metrics:
+  system: true
+  sensors: true
+  power: true
+  sel: true       # iDRAC only
+  storage: false
+  memory: false
+  network: false

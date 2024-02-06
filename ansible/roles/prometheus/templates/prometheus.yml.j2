@@ -44,6 +44,26 @@ scrape_configs:
 {% endfor %}
 {% endif %}
 
+{% if enable_prometheus_idrac_exporter | bool %}
+  - job_name: idrac
+    static_configs:
+{% for host in groups['prometheus-idrac-exporter'] %}
+      - targets:
+        - '{{ hostvars[host]['prometheus_idrac_exporter_ip'] }}'
+{% if hostvars[host].prometheus_instance_label | default(false, true) %}
+        labels:
+          instance: "{{ hostvars[host].prometheus_instance_label }}"
+{% endif %}
+{% endfor %}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9348
+{% endif %}
+
 {% if enable_prometheus_mysqld_exporter | bool %}
   - job_name: mysqld
     static_configs:

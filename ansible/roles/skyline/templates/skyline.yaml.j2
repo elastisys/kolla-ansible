@@ -77,6 +77,14 @@ openstack:
 {% if enable_cinder | bool %}
     volumev3: cinder
 {% endif %}
+{% if skyline_sso_enable | bool %}
+  sso_enabled: true
+  sso_protocols:
+{% for skyline_sso_protocol in skyline_sso_protocols %}
+  - {{ skyline_sso_protocol }}
+{% endfor %}
+  sso_region: {{ skyline_sso_region }}
+{% endif %}
   system_admin_roles:
 {% for skyline_system_admin_role in skyline_system_admin_roles %}
   - {{ skyline_system_admin_role }}

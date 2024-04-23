@@ -76,7 +76,6 @@ container_proxy:
 # to the api_interface.  Allow the bind address to be an override.
 api_interface_address: "{{ 'api' | kolla_address }}"
 
-
 ####################
 # Database options
 ####################
@@ -163,8 +162,8 @@ container_engine_volumes_path: "{{ docker_volumes_path if kolla_container_engine
 # Podman has problem with mounting whole /run directory
 # described here: https://github.com/containers/podman/issues/16305
 run_default_volumes_podman:
-  - '/run/netns:/run/netns:shared'
-  - '/run/lock/nova:/run/lock/nova:shared'
+  - "/run/netns:/run/netns:shared"
+  - "/run/lock/nova:/run/lock/nova:shared"
   - "/run/libvirt:/run/libvirt:shared"
   - "/run/nova:/run/nova:shared"
   - "/run/openvswitch:/run/openvswitch:shared"
@@ -172,8 +171,8 @@ run_default_volumes_podman:
 run_default_volumes_docker: []
 
 run_default_subdirectories:
-  - '/run/netns'
-  - '/run/lock/nova'
+  - "/run/netns"
+  - "/run/lock/nova"
   - "/run/libvirt"
   - "/run/nova"
   - "/run/openvswitch"
@@ -222,7 +221,6 @@ default_extra_volumes: []
 ####################
 # Arbitrary unique number from 0..255
 keepalived_virtual_router_id: "51"
-
 
 #######################
 ## Opensearch Options
@@ -564,6 +562,7 @@ prometheus_listen_port: "{{ prometheus_port }}"
 prometheus_public_port: "{{ haproxy_single_external_frontend_public_port if haproxy_single_external_frontend | bool else prometheus_port }}"
 prometheus_node_exporter_port: "9100"
 prometheus_idrac_exporter_port: "9348"
+prometheus_rgw_s3_exporter_port: "9290"
 prometheus_mysqld_exporter_port: "9104"
 prometheus_haproxy_exporter_port: "9101"
 prometheus_memcached_exporter_port: "9150"
@@ -1214,6 +1213,8 @@ enable_prometheus_server: "{{ enable_prometheus | bool }}"
 enable_prometheus_haproxy_exporter: "{{ enable_haproxy | bool }}"
 enable_prometheus_mysqld_exporter: "{{ enable_mariadb | bool }}"
 enable_prometheus_node_exporter: "{{ enable_prometheus | bool }}"
+enable_prometheus_idrac_exporter: "{{ enable_prometheus | bool }}"
+enable_prometheus_rgw_s3_exporter: "{{ enable_prometheus | bool }}"
 enable_prometheus_memcached_exporter: "{{ enable_memcached | bool }}"
 enable_prometheus_cadvisor: "{{ enable_prometheus | bool }}"
 enable_prometheus_fluentd_integration: "{{ enable_prometheus | bool and enable_fluentd | bool }}"
@@ -1247,6 +1248,17 @@ prometheus_msteams_webhook_url:
 prometheus_public_endpoint: "{{ prometheus_external_fqdn | kolla_url(public_protocol, prometheus_public_port) }}"
 prometheus_internal_endpoint: "{{ prometheus_internal_fqdn | kolla_url(internal_protocol, prometheus_port) }}"
 
+############
+# RGW S3 Exporter
+############
+rgw_s3_exporter_host:
+rgw_s3_access_key:
+
+############
+# Vitrage
+############
+enable_vitrage_prometheus_datasource: "{{ enable_prometheus | bool }}"
+
 ####################
 # InfluxDB options
 ####################
@@ -1258,19 +1270,11 @@ influxdb_internal_endpoint: "{{ kolla_internal_fqdn | kolla_url(internal_protoco
 #########################
 # Internal Image options
 #########################
-distro_python_version_map: {
-  "centos": "3.9",
-  "debian": "3.11",
-  "rocky": "3.9",
-  "ubuntu": "3.10"
-}
+distro_python_version_map:
+  { "centos": "3.9", "debian": "3.11", "rocky": "3.9", "ubuntu": "3.10" }
 
-kolla_base_distro_version_default_map: {
-  "centos": "stream9",
-  "debian": "bookworm",
-  "rocky": "9",
-  "ubuntu": "jammy",
-}
+kolla_base_distro_version_default_map:
+  { "centos": "stream9", "debian": "bookworm", "rocky": "9", "ubuntu": "jammy" }
 
 distro_python_version: "{{ distro_python_version_map[kolla_base_distro] }}"
 

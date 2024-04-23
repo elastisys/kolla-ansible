@@ -46,6 +46,23 @@
   when:
     - kolla_action != "config"
 
+- name: Restart prometheus-rgw-s3-exporter container
+  vars:
+    service_name: "prometheus-rgw-s3-exporter"
+    service: "{{ prometheus_services[service_name] }}"
+  become: true
+  kolla_container:
+    action: "recreate_or_restart_container"
+    common_options: "{{ docker_common_options }}"
+    name: "{{ service.container_name }}"
+    image: "{{ service.image }}"
+    pid_mode: "{{ service.pid_mode | default(omit) }}"
+    volumes: "{{ service.volumes }}"
+    dimensions: "{{ service.dimensions }}"
+    environment: "{{ service.environment | default(omit) }}"
+  when:
+    - kolla_action != "config"
+
 - name: Restart prometheus-mysqld-exporter container
   vars:
     service_name: "prometheus-mysqld-exporter"

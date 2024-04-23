@@ -579,6 +579,7 @@ prometheus_listen_port: "{{ prometheus_port }}"
 prometheus_public_port: "{{ haproxy_single_external_frontend_public_port if haproxy_single_external_frontend | bool else prometheus_port }}"
 prometheus_node_exporter_port: "9100"
 prometheus_idrac_exporter_port: "9348"
+prometheus_rgw_s3_exporter_port: "9290"
 prometheus_mysqld_exporter_port: "9104"
 prometheus_haproxy_exporter_port: "9101"
 prometheus_memcached_exporter_port: "9150"
@@ -1277,6 +1278,8 @@ enable_prometheus_server: "{{ enable_prometheus | bool }}"
 enable_prometheus_haproxy_exporter: "{{ enable_haproxy | bool }}"
 enable_prometheus_mysqld_exporter: "{{ enable_mariadb | bool }}"
 enable_prometheus_node_exporter: "{{ enable_prometheus | bool }}"
+enable_prometheus_idrac_exporter: "{{ enable_prometheus | bool }}"
+enable_prometheus_rgw_s3_exporter: "{{ enable_prometheus | bool }}"
 enable_prometheus_memcached_exporter: "{{ enable_memcached | bool }}"
 enable_prometheus_cadvisor: "{{ enable_prometheus | bool }}"
 enable_prometheus_fluentd_integration: "{{ enable_prometheus | bool and enable_fluentd | bool }}"
@@ -1307,6 +1310,12 @@ prometheus_msteams_webhook_url:
 
 prometheus_public_endpoint: "{{ prometheus_external_fqdn | kolla_url(public_protocol, prometheus_public_port) }}"
 prometheus_internal_endpoint: "{{ prometheus_internal_fqdn | kolla_url(internal_protocol, prometheus_port) }}"
+
+############
+# RGW S3 Exporter
+############
+rgw_s3_exporter_host:
+rgw_s3_access_key:
 
 ############
 # Vitrage

@@ -137,6 +137,17 @@ prometheus_services:
     image: "{{ prometheus_idrac_exporter_image_full }}"
     volumes: "{{ prometheus_idrac_exporter_default_volumes + prometheus_idrac_exporter_extra_volumes }}"
     dimensions: "{{ prometheus_idrac_exporter_dimensions }}"
+  prometheus-rgw-s3-exporter:
+    container_name: prometheus_rgw_s3_exporter
+    group: prometheus-rgw-s3-exporter
+    enabled: "{{ enable_prometheus_rgw_s3_exporter | bool }}"
+    environment:
+      CEPH_URL: "{{ rgw_s3_exporter_host }}"
+      CEPH_ACCESS_KEY: "{{ rgw_s3_access_key }}"
+      CEPH_ACCESS_SECRET: "{{ rgw_s3_secret_key }}"
+    image: "{{ prometheus_rgw_s3_exporter_image_full }}"
+    volumes: "{{ prometheus_rgw_s3_exporter_default_volumes + prometheus_rgw_s3_exporter_extra_volumes }}"
+    dimensions: "{{ prometheus_rgw_s3_exporter_dimensions }}"
 
 ####################
 # Prometheus Server
@@ -209,6 +220,10 @@ prometheus_idrac_exporter_image: "docker.io/freddeliv/idrac_exporter"
 prometheus_idrac_exporter_tag: "1.1.0"
 prometheus_idrac_exporter_image_full: "{{ prometheus_idrac_exporter_image }}:{{ prometheus_idrac_exporter_tag }}"
 
+prometheus_rgw_s3_exporter_image: "ghcr.io/elastisys/sepehrimanian/s3-ceph-exporter"
+prometheus_rgw_s3_exporter_tag: "v0.1.0"
+prometheus_rgw_s3_exporter_image_full: "{{ prometheus_rgw_s3_exporter_image }}:{{ prometheus_rgw_s3_exporter_tag }}"
+
 prometheus_memcached_exporter_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/prometheus-memcached-exporter"
 prometheus_memcached_exporter_tag: "{{ prometheus_tag }}"
 prometheus_memcached_exporter_image_full: "{{ prometheus_memcached_exporter_image }}:{{ prometheus_memcached_exporter_tag }}"
@@ -247,6 +262,7 @@ prometheus_haproxy_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_mysqld_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_node_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_idrac_exporter_dimensions: "{{ default_container_dimensions }}"
+prometheus_rgw_s3_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_memcached_exporter_dimensions: "{{ default_container_dimensions }}"
 prometheus_cadvisor_dimensions: "{{ default_container_dimensions }}"
 prometheus_alertmanager_dimensions: "{{ default_container_dimensions }}"
@@ -275,6 +291,10 @@ prometheus_node_exporter_default_volumes:
   - "/:/host:ro,rslave"
 prometheus_idrac_exporter_default_volumes:
   - "{{ node_config_directory }}/prometheus-idrac-exporter/idrac.yml:/etc/prometheus/idrac.yml:ro"
+  - "/etc/localtime:/etc/localtime:ro"
+  - "{{ '/etc/timezone:/etc/timezone:ro' if ansible_facts.os_family == 'Debian' else '' }}"
+  - "kolla_logs:/var/log/kolla/"
+prometheus_rgw_s3_exporter_default_volumes:
   - "/etc/localtime:/etc/localtime:ro"
   - "{{ '/etc/timezone:/etc/timezone:ro' if ansible_facts.os_family == 'Debian' else '' }}"
   - "kolla_logs:/var/log/kolla/"
@@ -330,6 +350,7 @@ prometheus_server_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_mysqld_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_node_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_idrac_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
+prometheus_rgw_s3_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_memcached_exporter_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_cadvisor_extra_volumes: "{{ prometheus_extra_volumes }}"
 prometheus_alertmanager_extra_volumes: "{{ prometheus_extra_volumes }}"
@@ -360,6 +381,7 @@ prometheus_memcached_exporter_cmdline_extras: ""
 prometheus_mysqld_exporter_cmdline_extras: ""
 prometheus_node_exporter_cmdline_extras: ""
 prometheus_idrac_exporter_cmdline_extras: ""
+prometheus_rgw_s3_exporter_cmdline_extras: ""
 prometheus_openstack_exporter_cmdline_extras: ""
 
 prometheus_alertmanager_external_url: "{{ internal_protocol }}://{{ kolla_internal_fqdn | put_address_in_context('url') }}:{{ prometheus_alertmanager_port }}"

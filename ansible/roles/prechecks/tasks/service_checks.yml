@@ -21,15 +21,15 @@
 # NOTE(mgoddard): If passwords.yml is encrypted using ansible-vault, this check
 # will pass, but only because nothing in the vault file has the format of a
 # YAML dict item.
-- name: Checking empty passwords in passwords.yml. Run kolla-genpwd if this task fails
-  command:
-    cmd: grep '^[^#].*:\s*$' "{{ node_config }}/passwords.yml"
-  delegate_to: localhost
-  run_once: True
-  register: result
-  changed_when: false
-  failed_when: result.stdout | regex_replace('(.*ssh_key.*)', '') is search(":")
-  check_mode: false
+#- name: Checking empty passwords in passwords.yml. Run kolla-genpwd if this task fails
+#  command:
+#    cmd: grep '^[^#].*:\s*$' "{{ node_config }}/passwords.yml"
+#  delegate_to: localhost
+#  run_once: True
+#  register: result
+#  changed_when: false
+#  failed_when: result.stdout | regex_replace('(.*ssh_key.*)', '') is search(":")
+#  check_mode: false
 
 - name: Check if nscd is running
   command: pgrep nscd

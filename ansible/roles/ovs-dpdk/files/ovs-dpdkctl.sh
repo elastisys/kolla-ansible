@@ -247,12 +247,16 @@ NM_CONTROLLED=no
 EOF
 install_redhat_bridge_service $bridge
     else
-        cat << EOF | tee "/etc/network/interfaces.d/$bridge.cfg"
-    auto $bridge
-    iface $bridge inet static
-        address $ip
-        netmask $mask
+        cat << EOF | tee "/etc/netplan/70-$bridge.yaml"
+network:
+  bridges:
+    $bridge:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - $cidr
 EOF
+      netplan apply
 
     fi
 }

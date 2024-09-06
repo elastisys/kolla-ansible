@@ -47,9 +47,9 @@ function generate_pciwhitelist {
     for nic in $(list_dpdk_nics); do
         address="$(get_value $nic address)"
         if [ "$_Whitelist" == '' ]; then
-            _Whitelist="-w $address"
+            _Whitelist="-a $address"
         else
-            _Whitelist="$_Whitelist -w $address"
+            _Whitelist="$_Whitelist -a $address"
         fi
     done
     echo $_Whitelist
@@ -247,12 +247,16 @@ NM_CONTROLLED=no
 EOF
 install_redhat_bridge_service $bridge
     else
-        cat << EOF | tee "/etc/network/interfaces.d/$bridge.cfg"
-    auto $bridge
-    iface $bridge inet static
-        address $ip
-        netmask $mask
+        cat << EOF | tee "/etc/netplan/70-$bridge.yaml"
+network:
+  bridges:
+    $bridge:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - $cidr
 EOF
+      netplan apply
 
     fi
 }

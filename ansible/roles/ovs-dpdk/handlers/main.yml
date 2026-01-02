@@ -40,7 +40,7 @@
   become: true
   command: >
     {{ kolla_container_engine }} exec {{ service.container_name }} /bin/sh -c
-    'CONFIG_FILE={{ container_config_directory }}/ovs-dpdkctl.conf {{ container_config_directory }}/ovs-dpdkctl.sh init'
+    'CONFIG_FILE={{ container_config_directory }}/ovs-dpdkctl.conf OVS_DPDK_CTL_DEBUG=True {{ container_config_directory }}/ovs-dpdkctl.sh init'
   register: status
   changed_when: status.stdout.find('changed') != -1
   when:

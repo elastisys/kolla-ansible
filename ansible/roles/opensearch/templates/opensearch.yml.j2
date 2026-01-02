@@ -11,6 +11,7 @@ node.master: true
 node.data: true
 discovery.seed_hosts: [{% for host in groups['opensearch'] %}"{{ 'api' | kolla_address(host) | put_address_in_context('url') }}"{% if not loop.last %},{% endif %}{% endfor %}]
 
+http.max_content_length: 1gb
 http.port: {{ opensearch_port }}
 gateway.expected_nodes: {{ num_nodes }}
 gateway.recover_after_time: "5m"

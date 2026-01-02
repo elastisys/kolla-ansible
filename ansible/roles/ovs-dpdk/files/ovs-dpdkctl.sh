@@ -247,16 +247,17 @@ NM_CONTROLLED=no
 EOF
 install_redhat_bridge_service $bridge
     else
-        cat << EOF | tee "/etc/netplan/70-$bridge.yaml"
-network:
-  bridges:
-    $bridge:
-      dhcp4: false
-      dhcp6: false
-      addresses:
-        - $cidr
-EOF
-      netplan apply
+#         cat << EOF | tee "/etc/netplan/70-$bridge.yaml"
+# network:
+#   bridges:
+#     $bridge:
+#       dhcp4: false
+#       dhcp6: false
+#       addresses:
+#         - $cidr
+# EOF
+#       netplan apply
+    echo "skipping netplan"
 
     fi
 }
@@ -267,7 +268,7 @@ function uninstall_network_manager_conf {
     if  [[ $(is_redhat_family) == 0 ]]; then
         rm -f /etc/sysconfig/network-scripts/ifcfg-$bridge
     else
-        rm -f /etc/network/interfaces.d/$bridge.cfg
+        rm -f "/etc/netplan/70-$bridge.yaml"
     fi
 }
 
